@@ -10,22 +10,22 @@ contract CompanyRegistry {
         string tokenName;
     }
 
-    struct TrustRecord {
-        bool isTrusted;
+    struct includesInEco {
+        bool includesInEco;
         uint256 createdTimestamp;
         uint256 removedTimestamp;
     }
 
     mapping(address => Company) public companies;
-    mapping(address => mapping(address => TrustRecord)) public trustMapping;
+    mapping(address => mapping(address => includesInEco)) public ecoMapping;
     address[] public companyAddresses;
 
     // Events
     event CompanyAdded(address indexed walletAddress, string name);
     event EcosystemUpdated(address indexed company1, address indexed company2, bool isPartnership);
-    event TrustGranted(address indexed trustor, address indexed trustee);
-    event TrustRevoked(address indexed trustor, address indexed trustee);
-    event TrustChangedForTrustedCompany(address indexed observer, address indexed trustedCompany, address indexed otherParty, bool trustGranted);
+    event Include(address indexed includer, address indexed includee);
+    event Exclude(address indexed includer, address indexed includee);
+    event IncludeeStatusUpdate(address indexed observer, address indexed includedCompany, address indexed otherParty, bool included);
 
     function addCompany(
         string memory _name,
@@ -47,36 +47,36 @@ contract CompanyRegistry {
         emit CompanyAdded(msg.sender, _name);
     }
 
-    function updateEcosystem(address _company2, bool _isTrusted) external {
+    function updateEcosystem(address _company2, bool  includesInEco) external {
         require(companies[msg.sender].walletAddress != address(0), "Company not registered");
         require(companies[_company2].walletAddress != address(0), "Company 2 not registered");
         require(msg.sender != _company2, "A company cannot trust itself");
 
-        TrustRecord storage record = trustMapping[msg.sender][_company2];
+        includesInEco storage record = ecoMapping[msg.sender][_company2];
 
-        if (_isTrusted) {
-            require(!record.isTrusted, "Trust already exists");
-            record.isTrusted = true;
+        if ( includesInEco) {
+            require(!record includesInEco, "Trust already exists");
+            record includesInEco = true;
             record.createdTimestamp = block.timestamp;
-            emit TrustGranted(msg.sender, _company2);
+            emit Include(msg.sender, _company2);
             // Notify observers that trust a company
             notifyObservers(msg.sender, _company2, true);
         } else {
-            require(record.isTrusted, "Trust does not exist");
-            record.isTrusted = false;
+            require(record includesInEco, "Trust does not exist");
+            record includesInEco = false;
             record.removedTimestamp = block.timestamp;
-            emit TrustRevoked(msg.sender, _company2);
+            emit Exclude(msg.sender, _company2);
             // Notify observers that trust a company
             notifyObservers(msg.sender, _company2, false);
         }
 
-        emit EcosystemUpdated(msg.sender, _company2, _isTrusted);
+        emit EcosystemUpdated(msg.sender, _company2,  includesInEco);
     }
 
-    function notifyObservers(address _trustor, address _trustee, bool _trustGranted) internal {
+    function notifyObservers(address _includer, address _includee, bool _included) internal {
         for (uint i = 0; i < companyAddresses.length; i++) {
-            if (trustMapping[companyAddresses[i]][_trustee].isTrusted) {
-                emit TrustChangedForTrustedCompany(companyAddresses[i], _trustee, _trustor, _trustGranted);
+            if (ecoMapping[companyAddresses[i]][_includee] includesInEco) {
+                emit (companyAddresses[i], _includee, _includer, _included);
             }
         }
     }
@@ -90,8 +90,8 @@ contract CompanyRegistry {
         return companyAddresses[index];
     }
 
-    function getTrustInfo(address _company1, address _company2) external view returns (bool isTrusted, uint256 createdTimestamp, uint256 removedTimestamp) {
-        TrustRecord storage record = trustMapping[_company1][_company2];
-        return (record.isTrusted, record.createdTimestamp, record.removedTimestamp);
+    function getTrustInfo(address _company1, address _company2) external view returns (bool includesInEco, uint256 createdTimestamp, uint256 removedTimestamp) {
+        includesInEco storage record = ecoMapping[_company1][_company2];
+        return (record includesInEco, record.createdTimestamp, record.removedTimestamp);
     }
 }
