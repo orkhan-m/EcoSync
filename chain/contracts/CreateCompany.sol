@@ -10,14 +10,14 @@ contract CompanyRegistry {
         string tokenName;
     }
 
-    struct includesInEco {
+    struct Eco {
         bool includesInEco;
         uint256 createdTimestamp;
         uint256 removedTimestamp;
     }
 
     mapping(address => Company) public companies;
-    mapping(address => mapping(address => includesInEco)) public ecoMapping;
+    mapping(address => mapping(address => Eco)) public ecoMapping;
     address[] public companyAddresses;
 
     // Events
@@ -52,18 +52,18 @@ contract CompanyRegistry {
         require(companies[_company2].walletAddress != address(0), "Company 2 not registered");
         require(msg.sender != _company2, "A company cannot trust itself");
 
-        includesInEco storage record = ecoMapping[msg.sender][_company2];
+        Eco storage record = ecoMapping[msg.sender][_company2];
 
         if ( includesInEco) {
-            require(!record includesInEco, "Trust already exists");
-            record includesInEco = true;
+            require(!record.includesInEco, "Trust already exists");
+            record.includesInEco = true;
             record.createdTimestamp = block.timestamp;
             emit Include(msg.sender, _company2);
             // Notify observers that trust a company
             notifyObservers(msg.sender, _company2, true);
         } else {
-            require(record includesInEco, "Trust does not exist");
-            record includesInEco = false;
+            require(record.includesInEco, "Trust does not exist");
+            record.includesInEco = false;
             record.removedTimestamp = block.timestamp;
             emit Exclude(msg.sender, _company2);
             // Notify observers that trust a company
@@ -75,8 +75,8 @@ contract CompanyRegistry {
 
     function notifyObservers(address _includer, address _includee, bool _included) internal {
         for (uint i = 0; i < companyAddresses.length; i++) {
-            if (ecoMapping[companyAddresses[i]][_includee] includesInEco) {
-                emit (companyAddresses[i], _includee, _includer, _included);
+            if (ecoMapping[companyAddresses[i]][_includee].includesInEco) {
+                emit IncludeeStatusUpdate(companyAddresses[i], _includee, _includer, _included);
             }
         }
     }
@@ -91,7 +91,7 @@ contract CompanyRegistry {
     }
 
     function getTrustInfo(address _company1, address _company2) external view returns (bool includesInEco, uint256 createdTimestamp, uint256 removedTimestamp) {
-        includesInEco storage record = ecoMapping[_company1][_company2];
-        return (record includesInEco, record.createdTimestamp, record.removedTimestamp);
+        Eco storage record = ecoMapping[_company1][_company2];
+        return (record.includesInEco, record.createdTimestamp, record.removedTimestamp);
     }
 }
