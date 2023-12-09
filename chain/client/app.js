@@ -57,13 +57,51 @@ document.addEventListener("DOMContentLoaded", async () => {
           {
             indexed: true,
             internalType: "address",
+            name: "includer",
+            type: "address",
+          },
+          {
+            indexed: true,
+            internalType: "address",
+            name: "includee",
+            type: "address",
+          },
+        ],
+        name: "Exclude",
+        type: "event",
+      },
+      {
+        anonymous: false,
+        inputs: [
+          {
+            indexed: true,
+            internalType: "address",
+            name: "includer",
+            type: "address",
+          },
+          {
+            indexed: true,
+            internalType: "address",
+            name: "includee",
+            type: "address",
+          },
+        ],
+        name: "Include",
+        type: "event",
+      },
+      {
+        anonymous: false,
+        inputs: [
+          {
+            indexed: true,
+            internalType: "address",
             name: "observer",
             type: "address",
           },
           {
             indexed: true,
             internalType: "address",
-            name: "trustedCompany",
+            name: "includedCompany",
             type: "address",
           },
           {
@@ -75,49 +113,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           {
             indexed: false,
             internalType: "bool",
-            name: "trustGranted",
+            name: "included",
             type: "bool",
           },
         ],
-        name: "TrustChangedForTrustedCompany",
-        type: "event",
-      },
-      {
-        anonymous: false,
-        inputs: [
-          {
-            indexed: true,
-            internalType: "address",
-            name: "trustor",
-            type: "address",
-          },
-          {
-            indexed: true,
-            internalType: "address",
-            name: "trustee",
-            type: "address",
-          },
-        ],
-        name: "TrustGranted",
-        type: "event",
-      },
-      {
-        anonymous: false,
-        inputs: [
-          {
-            indexed: true,
-            internalType: "address",
-            name: "trustor",
-            type: "address",
-          },
-          {
-            indexed: true,
-            internalType: "address",
-            name: "trustee",
-            type: "address",
-          },
-        ],
-        name: "TrustRevoked",
+        name: "IncludeeStatusUpdate",
         type: "event",
       },
       {
@@ -193,11 +193,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             type: "address",
           },
         ],
-        name: "trustMapping",
+        name: "ecoMapping",
         outputs: [
           {
             internalType: "bool",
-            name: "isTrusted",
+            name: "includesInEco",
             type: "bool",
           },
           {
@@ -252,7 +252,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           },
           {
             internalType: "bool",
-            name: "_isTrusted",
+            name: "_includesInEco",
             type: "bool",
           },
         ],
@@ -308,11 +308,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             type: "address",
           },
         ],
-        name: "getTrustInfo",
+        name: "getInclusionInfo",
         outputs: [
           {
             internalType: "bool",
-            name: "isTrusted",
+            name: "includesInEco",
             type: "bool",
           },
           {
@@ -332,14 +332,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     ];
     // Contract address (replace with your contract's address)
-    const contractAddress = "0xD4AFf5446135D86020992b0Aa381Ebc66cF8Ed66";
+    const contractAddress = "0x3F8385263FbE3d66e7242Bd669a46b1269fe6ADE";
 
     // Initialize contract instance
     const contract = new web3.eth.Contract(contractAbi, contractAddress);
 
     // Get the connected Ethereum account
     const accounts = await web3.eth.getAccounts();
-    const account = accounts[1];
+    const account = accounts[2];
 
     // Function to navigate to the index.html page
     function navigateToIndexPage() {
@@ -351,14 +351,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.location.href = "companies.html";
     }
 
-    // Function to navigate to the create-trust.html page
-    function navigateToCreateTrustPage() {
-      window.location.href = "create-trust.html";
+    // Function to navigate to the create-eco-inclusion.html page
+    function navigateToCreateEcoInclusion() {
+      window.location.href = "create-eco-inclusion.html";
     }
 
     // Function to navigate to the trust-statistics.html page
-    function navigateToTrustStatsPage() {
-      window.location.href = "trust-statistics.html";
+    function navigateToEcoStatsPage() {
+      window.location.href = "eco-statistics.html";
     }
 
     // Function to navigate to the events.html page
@@ -369,18 +369,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Add event listeners to the buttons for navigation
     const indexPageButton = document.getElementById("indexPageButton");
     const companiesPageButton = document.getElementById("companiesPageButton");
-    const createTrustPageButton = document.getElementById(
-      "createTrustPageButton"
+    const ecoInclusionPageButton = document.getElementById(
+      "ecoInclusionPageButton"
     );
-    const trustStatsPageButton = document.getElementById(
-      "trustStatsPageButton"
-    );
+    const ecoStatsPageButton = document.getElementById("ecoStatsPageButton");
     const eventsPageButton = document.getElementById("eventsPageButton");
 
     indexPageButton.addEventListener("click", navigateToIndexPage);
     companiesPageButton.addEventListener("click", navigateToCompaniesPage);
-    createTrustPageButton.addEventListener("click", navigateToCreateTrustPage);
-    trustStatsPageButton.addEventListener("click", navigateToTrustStatsPage);
+    ecoInclusionPageButton.addEventListener(
+      "click",
+      navigateToCreateEcoInclusion
+    );
+    ecoStatsPageButton.addEventListener("click", navigateToEcoStatsPage);
     eventsPageButton.addEventListener("click", navigateToEventsPage);
 
     // Check if the current page is companies.html and display companies if so
@@ -389,8 +390,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Trust Statistics
-    if (window.location.pathname.endsWith("trust-statistics.html")) {
-      displayTrustStatistics();
+    if (window.location.pathname.endsWith("eco-statistics.html")) {
+      displayEcoStatistics();
     }
 
     // Function to display the list of companies on the companies.html page
@@ -419,16 +420,16 @@ document.addEventListener("DOMContentLoaded", async () => {
           companyListElement.appendChild(companyDiv);
 
           // Fetch trust information between this company and the current account
-          const trustInfo = await contract.methods
-            .trustMapping(account, companyInfo.walletAddress)
+          const ecoInfo = await contract.methods
+            .ecoMapping(account, companyInfo.walletAddress)
             .call();
 
           // Display trust information
-          const trustDiv = document.createElement("div");
-          trustDiv.textContent = `Trust with ${companyInfo.name}: ${
-            trustInfo.isTrusted ? "Yes" : "No"
+          const ecoDiv = document.createElement("div");
+          ecoDiv.textContent = `Ecosystem inclusion of ${companyInfo.name}: ${
+            ecoInfo.includesInEco ? "Yes" : "No"
           }`;
-          companyListElement.appendChild(trustDiv);
+          companyListElement.appendChild(ecoDiv);
         }
       } catch (error) {
         // Handle error (you can display an error message)
@@ -437,7 +438,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Function to create trust to another company
-    async function createTrust(companyAddress) {
+    async function createEcoInclusion(companyAddress) {
       try {
         // Call the updateEcosystem function in the smart contract to create trust
         await contract.methods
@@ -445,15 +446,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           .send({ from: account, gas: 2000000 });
 
         // Handle success (you can display a success message)
-        console.log("Trust created successfully");
+        console.log("Added to Eco successfully");
       } catch (error) {
         // Handle error (you can display an error message)
-        console.error("Error creating trust:", error);
+        console.error("Error adding to Eco:", error);
       }
     }
 
     // New function to revoke trust
-    async function revokeTrust(companyAddress) {
+    async function revokeEcoInclusion(companyAddress) {
       try {
         // Call the updateEcosystem function in the smart contract to revoke trust
         await contract.methods
@@ -461,32 +462,36 @@ document.addEventListener("DOMContentLoaded", async () => {
           .send({ from: account, gas: 2000000 });
 
         // Handle success (you can display a success message)
-        console.log("Trust revoked successfully");
+        console.log("Exclusion successfully");
       } catch (error) {
         // Handle error (you can display an error message)
-        console.error("Error revoking trust:", error);
+        console.error("Error excluding:", error);
       }
     }
 
-    // Check if the current page is create-trust.html
-    if (window.location.pathname.endsWith("create-trust.html")) {
-      const createTrustForm = document.getElementById("createTrustForm");
-      const revokeTrustForm = document.getElementById("revokeTrustForm");
+    // Check if the current page is create-eco-inclusion.html
+    if (window.location.pathname.endsWith("create-eco-inclusion.html")) {
+      const createEcoInclusionForm = document.getElementById(
+        "createEcoInclusionForm"
+      );
+      const revokeEcoInclusionForm = document.getElementById(
+        "revokeEcoInclusionForm"
+      );
 
-      createTrustForm.addEventListener("submit", async (e) => {
+      createEcoInclusionForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const companyAddress = document.getElementById("companyAddress").value;
 
-        // Call the createTrust function to create trust to the specified company
-        await createTrust(companyAddress);
+        // Call the createEcoInclusion function to create trust to the specified company
+        await createEcoInclusion(companyAddress);
       });
-      revokeTrustForm.addEventListener("submit", async (e) => {
+      revokeEcoInclusionForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const companyAddress = document.getElementById(
           "revokeCompanyAddress"
         ).value;
-        await revokeTrust(companyAddress); // new function to revoke trust
+        await revokeEcoInclusion(companyAddress); // new function to revoke trust
       });
     }
 
@@ -501,28 +506,28 @@ document.addEventListener("DOMContentLoaded", async () => {
           );
           updateEventDisplay("companyAddedEventContainer", companyAddedEvents);
 
-          // Fetch historical TrustGranted events
-          const trustGrantedEvents = await contract.getPastEvents(
-            "TrustGranted",
-            { fromBlock: 0, toBlock: "latest" }
-          );
-          updateEventDisplay("trustGrantedEventContainer", trustGrantedEvents);
+          // Fetch historical Include events
+          const IncludeEvents = await contract.getPastEvents("Include", {
+            fromBlock: 0,
+            toBlock: "latest",
+          });
+          updateEventDisplay("IncludeEventContainer", IncludeEvents);
 
-          // Fetch historical TrustRevoked events
-          const trustRevokedEvents = await contract.getPastEvents(
-            "TrustRevoked",
-            { fromBlock: 0, toBlock: "latest" }
-          );
-          updateEventDisplay("trustRevokedEventContainer", trustRevokedEvents);
+          // Fetch historical Exclude events
+          const ExcludeEvents = await contract.getPastEvents("Exclude", {
+            fromBlock: 0,
+            toBlock: "latest",
+          });
+          updateEventDisplay("ExcludeEventContainer", ExcludeEvents);
 
-          // Fetch historical TrustChangedForTrustedCompany events
-          const trustChangedEvents = await contract.getPastEvents(
-            "TrustChangedForTrustedCompany",
+          // Fetch historical IncludeeStatusUpdate events
+          const ecoChangedEvents = await contract.getPastEvents(
+            "IncludeeStatusUpdate",
             { fromBlock: 0, toBlock: "latest" }
           );
           updateEventDisplay(
-            "trustChangedForTrustedCompanyEventContainer",
-            trustChangedEvents
+            "IncludeeStatusUpdateEventContainer",
+            ecoChangedEvents
           );
         } catch (error) {
           console.error("Error fetching events:", error);
@@ -577,12 +582,57 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("User denied account access:", error);
     }
 
+    async function updateEcoStatisticsOnPage(
+      inclusion_given,
+      inclusion_received,
+      allInclusions
+    ) {
+      // Find the company address with the most trusts given and received
+      const mostInclusionsGivenCompanyAddress = Object.keys(
+        inclusion_given
+      ).reduce((a, b) => (inclusion_given[a] > inclusion_given[b] ? a : b));
+
+      const mostInclusionsReceivedCompanyAddress = Object.keys(
+        inclusion_received
+      ).reduce((a, b) =>
+        inclusion_received[a] > inclusion_received[b] ? a : b
+      );
+
+      // Fetch the company names using the addresses
+      const mostInclusionsGivenCompanyName = await contract.methods
+        .companies(mostInclusionsGivenCompanyAddress)
+        .call()
+        .then((company) => company.name);
+      const mostInclusionsReceivedCompanyName = await contract.methods
+        .companies(mostInclusionsReceivedCompanyAddress)
+        .call()
+        .then((company) => company.name);
+
+      // Update HTML for Most Trusts Given
+      document.getElementById(
+        "mostInclusionsGiven"
+      ).innerText = `Company Name: ${mostInclusionsGivenCompanyName} (Address: ${mostInclusionsGivenCompanyAddress}), Inclusion Given: ${inclusion_given[mostInclusionsGivenCompanyAddress]}`;
+
+      // Update HTML for Most Trusts Received
+      document.getElementById(
+        "mostInclusionsReceived"
+      ).innerText = `Company Name: ${mostInclusionsReceivedCompanyName} (Address: ${mostInclusionsReceivedCompanyAddress}), Inclusions Received: ${inclusion_received[mostInclusionsReceivedCompanyAddress]}`;
+
+      // Update HTML for All Trusts List
+      const allInclusionsList = document.getElementById("allInclusionsList");
+      allInclusionsList.innerHTML = "";
+      allInclusions.forEach((inclusion_given) => {
+        let listItem = document.createElement("li");
+        listItem.innerText = inclusion_given;
+        allInclusionsList.appendChild(listItem);
+      });
+    }
     // Add this function at the end of your app.js file
-    async function displayTrustStatistics() {
+    async function displayEcoStatistics() {
       const totalCompanies = await contract.methods.totalCompanies().call();
-      let trustCountsGiven = {};
-      let trustCountsReceived = {};
-      let allTrusts = [];
+      let ecoInclusionGivenCount = {};
+      let ecoInclusionReceivedCount = {};
+      let allEcoInclusions = [];
 
       for (let i = 0; i < totalCompanies; i++) {
         const companyAddress = await contract.methods
@@ -593,8 +643,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           .call()
           .then((company) => company.name);
 
-        trustCountsGiven[companyAddress] = 0;
-        trustCountsReceived[companyAddress] = 0;
+        ecoInclusionGivenCount[companyAddress] = 0;
+        ecoInclusionReceivedCount[companyAddress] = 0;
 
         for (let j = 0; j < totalCompanies; j++) {
           if (i !== j) {
@@ -605,65 +655,26 @@ document.addEventListener("DOMContentLoaded", async () => {
               .companies(otherCompanyAddress)
               .call()
               .then((company) => company.name);
-            const trustInfo = await contract.methods
-              .getTrustInfo(companyAddress, otherCompanyAddress)
+            const ecoInfo = await contract.methods
+              .getInclusionInfo(companyAddress, otherCompanyAddress)
               .call();
 
-            if (trustInfo.isTrusted) {
-              trustCountsGiven[companyAddress]++;
-              trustCountsReceived[otherCompanyAddress]++;
-              allTrusts.push(
-                `${companyName} (${companyAddress}) trusts ${otherCompanyName} (${otherCompanyAddress})`
+            if (ecoInfo.includesInEco) {
+              ecoInclusionGivenCount[companyAddress]++;
+              ecoInclusionReceivedCount[otherCompanyAddress]++;
+              allEcoInclusions.push(
+                `${companyName} (${companyAddress}) includes ${otherCompanyName} (${otherCompanyAddress})`
               );
             }
           }
         }
       }
 
-      updateTrustStatisticsOnPage(
-        trustCountsGiven,
-        trustCountsReceived,
-        allTrusts
+      updateEcoStatisticsOnPage(
+        ecoInclusionGivenCount,
+        ecoInclusionReceivedCount,
+        allEcoInclusions
       );
-    }
-
-    async function updateTrustStatisticsOnPage(given, received, allTrusts) {
-      // Find the company address with the most trusts given and received
-      const mostTrustsGivenCompanyAddress = Object.keys(given).reduce((a, b) =>
-        given[a] > given[b] ? a : b
-      );
-      const mostTrustsReceivedCompanyAddress = Object.keys(received).reduce(
-        (a, b) => (received[a] > received[b] ? a : b)
-      );
-
-      // Fetch the company names using the addresses
-      const mostTrustsGivenCompanyName = await contract.methods
-        .companies(mostTrustsGivenCompanyAddress)
-        .call()
-        .then((company) => company.name);
-      const mostTrustsReceivedCompanyName = await contract.methods
-        .companies(mostTrustsReceivedCompanyAddress)
-        .call()
-        .then((company) => company.name);
-
-      // Update HTML for Most Trusts Given
-      document.getElementById(
-        "mostTrustsGiven"
-      ).innerText = `Company Name: ${mostTrustsGivenCompanyName} (Address: ${mostTrustsGivenCompanyAddress}), Trusts Given: ${given[mostTrustsGivenCompanyAddress]}`;
-
-      // Update HTML for Most Trusts Received
-      document.getElementById(
-        "mostTrustsReceived"
-      ).innerText = `Company Name: ${mostTrustsReceivedCompanyName} (Address: ${mostTrustsReceivedCompanyAddress}), Trusts Received: ${received[mostTrustsReceivedCompanyAddress]}`;
-
-      // Update HTML for All Trusts List
-      const allTrustsList = document.getElementById("allTrustsList");
-      allTrustsList.innerHTML = "";
-      allTrusts.forEach((trust) => {
-        let listItem = document.createElement("li");
-        listItem.innerText = trust;
-        allTrustsList.appendChild(listItem);
-      });
     }
   } else {
     console.error(

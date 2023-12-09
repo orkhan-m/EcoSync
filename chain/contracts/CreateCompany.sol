@@ -47,14 +47,14 @@ contract CompanyRegistry {
         emit CompanyAdded(msg.sender, _name);
     }
 
-    function updateEcosystem(address _company2, bool  includesInEco) external {
+    function updateEcosystem(address _company2, bool  _includesInEco) external {
         require(companies[msg.sender].walletAddress != address(0), "Company not registered");
         require(companies[_company2].walletAddress != address(0), "Company 2 not registered");
         require(msg.sender != _company2, "A company cannot trust itself");
 
         Eco storage record = ecoMapping[msg.sender][_company2];
 
-        if ( includesInEco) {
+        if ( _includesInEco) {
             require(!record.includesInEco, "Trust already exists");
             record.includesInEco = true;
             record.createdTimestamp = block.timestamp;
@@ -70,7 +70,7 @@ contract CompanyRegistry {
             notifyObservers(msg.sender, _company2, false);
         }
 
-        emit EcosystemUpdated(msg.sender, _company2,  includesInEco);
+        emit EcosystemUpdated(msg.sender, _company2,  _includesInEco);
     }
 
     function notifyObservers(address _includer, address _includee, bool _included) internal {
