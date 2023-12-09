@@ -90,7 +90,7 @@ contract CompanyRegistry {
         return companyAddresses[index];
     }
 
-    function getTrustInfo(address _company1, address _company2) external view returns (bool includesInEco, uint256 createdTimestamp, uint256 removedTimestamp) {
+    function getInclusionInfo(address _company1, address _company2) external view returns (bool includesInEco, uint256 createdTimestamp, uint256 removedTimestamp) {
         Eco storage record = ecoMapping[_company1][_company2];
         return (record.includesInEco, record.createdTimestamp, record.removedTimestamp);
     }
