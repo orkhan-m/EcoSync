@@ -50,19 +50,19 @@ contract CompanyRegistry {
     function updateEcosystem(address _company2, bool  _includesInEco) external {
         require(companies[msg.sender].walletAddress != address(0), "Company not registered");
         require(companies[_company2].walletAddress != address(0), "Company 2 not registered");
-        require(msg.sender != _company2, "A company cannot trust itself");
+        require(msg.sender != _company2, "A company cannot include itself");
 
         Eco storage record = ecoMapping[msg.sender][_company2];
 
         if ( _includesInEco) {
-            require(!record.includesInEco, "Trust already exists");
+            require(!record.includesInEco, "Already added to Ecosystem");
             record.includesInEco = true;
             record.createdTimestamp = block.timestamp;
             emit Include(msg.sender, _company2);
             // Notify observers that trust a company
             notifyObservers(msg.sender, _company2, true);
         } else {
-            require(record.includesInEco, "Trust does not exist");
+            require(record.includesInEco, "Company is not in your ecosystem");
             record.includesInEco = false;
             record.removedTimestamp = block.timestamp;
             emit Exclude(msg.sender, _company2);
